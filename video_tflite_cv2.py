@@ -10,8 +10,6 @@ import tflite_runtime.interpreter as tflite
 import numpy as np
 import os
 import time
-import argparse
-from PIL import Image
 
 #Video
 path= os.getcwd()
@@ -38,11 +36,10 @@ input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
 def run_inference(image):
-    # print(image)
-    input_data = Image.fromarray(image) 
-    input_data= input_data.resize((224,224), Image.BOX)
-    input_data= input_data.convert('HSV')
-    input_data= np.expand_dims(np.array(input_data, dtype=np.uint8), axis=0)
+    # print(image) #should be an array
+    input_data = cv2.resize(image, (224,224), interpolation= cv2.INTER_NEAREST)
+    input_data = cv2.cvtColor(input_data, cv2.COLOR_BGR2HSV)
+    input_data= np.expand_dims(input_data, axis=0)
     interpreter.set_tensor(input_details[0]['index'], input_data)
     interpreter.invoke()
     return interpreter.get_tensor(output_details[0]['index'])
@@ -68,7 +65,7 @@ while(cap.isOpened()):
       frame= cv2.flip(frame, 0)
       print(run_inference(frame))
       inference_result= np.squeeze(run_inference(frame))
-      if inference_result <= 125:
+      if inference_result <= 120:
           frame= cv2.putText(frame,'Detectado!', 
               bottomLeftCornerOfText, 
               font, 
@@ -81,7 +78,7 @@ while(cap.isOpened()):
       cv2.imshow('Frame',frame)
       
   # Press Q on keyboard to  exit
-      if cv2.waitKey(25) & 0xFF == ord('q'):
+      if cv2.waitKey(1) & 0xFF == ord('q'):
           break
   # Break the loop
   else:
