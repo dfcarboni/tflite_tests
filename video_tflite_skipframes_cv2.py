@@ -54,28 +54,37 @@ if (cap.isOpened()== False):
     print("Error opening video stream or file")
 
 
+seconds = 1
+fps = cap.get(cv2.CAP_PROP_FPS) # Gets the frames per second
+# multiplier = fps * seconds
+multiplier= 3
+
 #----------------------------------------------------
 # Read until video is completed
 while(cap.isOpened()):
   # Capture frame-by-frame
+  start_time = time.perf_counter()
   ret, frame = cap.read()
+  count = 0
   if ret == True:
-      # Display the resulting frame
-      start_time = time.perf_counter()
-      frame= cv2.flip(frame, 0)
-      inference_result= np.squeeze(run_inference(frame))
-      print(inference_result)
-      if inference_result <= 120:
-          frame= cv2.putText(frame,'Detectado!', 
-              bottomLeftCornerOfText, 
-              font, 
-              fontScale,
-              fontColor,
-              thickness,
-              lineType)
-      elapsed_ms = (time.perf_counter() - start_time) * 1000   
-      print('Time: {:.2f} ms'.format(elapsed_ms))
-      cv2.imshow('Frame',frame)
+      frameId = int(round(cap.get(1)))
+      ret, frame = cap.read()
+
+      if frameId % multiplier == 0:
+          frame= cv2.flip(frame, 0)
+          inference_result= np.squeeze(run_inference(frame))
+          print(inference_result)
+          if inference_result <= 120:
+              frame= cv2.putText(frame,'Detectado!', 
+                  bottomLeftCornerOfText, 
+                  font, 
+                  fontScale,
+                  fontColor,
+                  thickness,
+                  lineType)
+          elapsed_ms = (time.perf_counter() - start_time) * 1000   
+          print('Time: {:.2f} ms'.format(elapsed_ms))
+          cv2.imshow('Frame',frame)
       
   # Press Q on keyboard to  exit
       if cv2.waitKey(1) & 0xFF == ord('q'):
